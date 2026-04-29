@@ -1,0 +1,7 @@
+archiso-calamares-config/
+calamares/
+masterpdfeditor-free/
+paru/
+powershell-lts-bin/
+touche/
+*.pkg.tar.zst
