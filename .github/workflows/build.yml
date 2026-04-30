@@ -62,6 +62,7 @@ jobs:
 
       - name: Push DB changes to GitHub
         run: |
+          git config --global --add safe.directory /__w/aur_repo/aur_repo
           git config --global user.name "ArchBot"
           git config --global user.email "bot@github.com"
           git add x86_64/*.db x86_64/*.files
