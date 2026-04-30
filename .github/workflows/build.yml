@@ -15,7 +15,7 @@ jobs:
     steps:
       - name: Install system dependencies
         run: |
-          pacman -Syu --noconfirm base-devel git rclone sudo
+          pacman -Syu --noconfirm base-devel git rclone sudo gt6-webengine
 
       - name: Checkout code
         uses: actions/checkout@v4
@@ -33,7 +33,7 @@ jobs:
           #sudo -u builder gpg --recv-keys 5E4E4D24A34ECD57
 
           # 2. Lista paczek
-          PKGS=("masterpdfeditor-free" "touche" "paru-bin" "powershell-lts-bin" "arduino-ide-bin" "visual-studio-code-bin" "ytmdesktop-bin" "clion" "calamares" "hplip-plugin" "teams-for-linux-bin" "google-chrome" "debtap" "coolercontrol-bin" "coolercontrold-bin" "ttf-ms-fonts")
+          PKGS=("masterpdfeditor-free" "touche" "paru-bin" "powershell-lts-bin" "arduino-ide-bin" "visual-studio-code-bin" "ytmdesktop-bin" "clion" "calamares" "hplip-plugin" "teams-for-linux-bin" "google-chrome" "debtap" "coolercontrold-bin" "coolercontrol-bin" "ttf-ms-fonts")
 
           mkdir -p x86_64
           # 3. Pętla budująca
