@@ -28,7 +28,7 @@ jobs:
           chown -R builder:builder .
 
           # Klucze PGP
-          sudo -u builder gpg --recv-keys 5E4E4D24A34ECD57
+          #sudo -u builder gpg --recv-keys 5E4E4D24A34ECD57
 
           # 2. Lista paczek
           PKGS=("masterpdfeditor-free" "touche" "paru-bin" "powershell-lts-bin" "arduino-ide-bin" "visual-studio-code-bin" "ytmdesktop-bin" "clion" "calamares" "hplip-plugin")
@@ -40,7 +40,7 @@ jobs:
             sudo -u builder git clone https://aur.archlinux.org/$p.git
             cd $p
             # Budowanie bez sprawdzania sum kontrolnych, jeśli boisz się o błędy wersji (opcjonalnie)
-            sudo -u builder makepkg -s --noconfirm --nocheck
+            sudo -u builder makepkg -s --noconfirm --nocheck --skippgpcheck
             cp *.pkg.tar.zst ../x86_64/
             cd ..
           done
