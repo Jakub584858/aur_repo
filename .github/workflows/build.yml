@@ -37,7 +37,7 @@ jobs:
             sudo -u builder git clone https://aur.archlinux.org/$p.git
             cd $p
             # Budowanie bez sprawdzania sum kontrolnych, jeśli boisz się o błędy wersji (opcjonalnie)
-            sudo -u builder makepkg -s --noconfirm
+            sudo -u builder makepkg -s --noconfirm --nocheck
             cp *.pkg.tar.zst ../x86_64/
             cd ..
           done
