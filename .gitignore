@@ -1,4 +1,8 @@
 *.pkg.tar.zst
+*.pkg.tar.zst.sig
 x86_64/*.pkg.tar.zst
-*/
-!x86_64/
+/*/
+!/x86_64/
+!/.github/
+*.old
+*.tar.gz
