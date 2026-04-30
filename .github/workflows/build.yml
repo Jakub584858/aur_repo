@@ -48,6 +48,7 @@ jobs:
           # 4. Generowanie bazy
           cd x86_64
           repo-add aur_repo.db.tar.gz *.pkg.tar.zst
+          rm -f aur_repo.db aur_repo.files
           cp aur_repo.db.tar.gz aur_repo.db
           cp aur_repo.files.tar.gz aur_repo.files
 
