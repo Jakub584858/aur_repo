@@ -1,0 +1,119 @@
+:root {
+  --primary: #1793d1; /* Arch Linux Blue */
+  --dark: #333;
+  --light: #f9f9f9;
+  --white: #ffffff;
+}
+
+body {
+  background-color: var(--light);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
+  margin: 0;
+  color: var(--dark);
+}
+
+/* Sekcja Hero */
+.hero {
+  background: linear-gradient(135deg, #0f0f0f, var(--primary));
+  color: var(--white);
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.hero h1 {
+  margin-bottom: 1rem;
+  font-size: 2.5rem;
+}
+
+.hero p {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+}
+
+/* Przyciski z efektami hover */
+.btn-primary,
+.btn-secondary {
+  padding: 0.8rem 1.5rem;
+  text-decoration: none;
+  border-radius: 5px;
+  font-weight: bold;
+  margin: 0.5rem;
+  display: inline-block;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: var(--white);
+  color: var(--primary);
+  border: 2px solid var(--white);
+}
+
+.btn-primary:hover {
+  background: transparent;
+  color: var(--white);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.btn-secondary {
+  border: 2px solid var(--white);
+  color: var(--white);
+}
+
+.btn-secondary:hover {
+  background: var(--white);
+  color: var(--primary);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary:active,
+.btn-secondary:active {
+  transform: translateY(-1px);
+}
+
+/* Główna zawartość */
+.container {
+  max-width: 1000px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.description {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.description h2 {
+  color: var(--primary);
+}
+
+/* Siatka kart */
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+.feature-card {
+  background: var(--white);
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border-top: 4px solid var(--primary);
+}
+
+.feature-card h3 {
+  margin-top: 0;
+  color: var(--primary);
+}
+
+code {
+  background: #eee;
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-family: "Courier New", Courier, monospace;
+}
