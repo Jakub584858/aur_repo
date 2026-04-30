@@ -27,11 +27,13 @@ jobs:
           echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
           chown -R builder:builder .
 
+          sed -i 's/OPTIONS=(/OPTIONS=(!debug /' /etc/makepkg.conf
+
           # Klucze PGP
           #sudo -u builder gpg --recv-keys 5E4E4D24A34ECD57
 
           # 2. Lista paczek
-          PKGS=("masterpdfeditor-free" "touche" "paru-bin" "powershell-lts-bin" "arduino-ide-bin" "visual-studio-code-bin" "ytmdesktop-bin" "clion" "calamares" "hplip-plugin")
+          PKGS=("masterpdfeditor-free" "touche" "paru-bin" "powershell-lts-bin" "arduino-ide-bin" "visual-studio-code-bin" "ytmdesktop-bin" "clion" "calamares" "hplip-plugin" "teams-for-linux-bin" "google-chrome" "debtap" "coolercontrol-bin" "coolercontrold-bin" "ttf-ms-fonts")
 
           mkdir -p x86_64
           # 3. Pętla budująca
