@@ -1,66 +1,66 @@
 name: Weekly Rolling Build
 on:
   schedule:
-    - cron: '0 0 * * 0' # Co niedzielę o 00:00
+    - cron: "0 0 * * 0" # Co niedzielę o 00:00
   workflow_dispatch: # Pozwala też uruchomić ręcznie przyciskiem
 
 jobs:
-  build-n-deploy:
+  build:
     runs-on: ubuntu-latest
+    # To jest klucz: GitHub sam odpali kontener Archa
+    container:
+      image: archlinux:latest
+      options: --privileged
+
     steps:
-      - name: Checkout repo
+      - name: Install system dependencies
+        run: |
+          pacman -Syu --noconfirm base-devel git rclone sudo
+
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Build in Docker (Arch Linux)
-        uses: jscatena/run-arch-action@v1 # Uruchamia kroki wewnątrz kontenera Arch
-        with:
-          install: base-devel git rclone
-          run: |
-            # 1. Konfiguracja użytkownika do budowania
-            useradd -m builder
-            echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-            chown -R builder:builder .
-            
-            # 2. Lista paczek do zbudowania
-            PACKAGES=(
-              "masterpdfeditor-free" "touche" "paru-bin" "powershell-lts-bin" 
-              "arduino-ide-bin" "visual-studio-code-bin" "ytmdesktop-bin" 
-              "clion" "calamares" "hplip-plugin"
-            )
+      - name: Build Packages
+        run: |
+          # 1. Konfiguracja użytkownika (makepkg nie lubi roota)
+          useradd -m builder
+          echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+          chown -R builder:builder .
 
-            # 3. Pętla budująca
-            mkdir -p x86_64
-            for pkg in "${PACKAGES[@]}"; do
-              echo "--- Building $pkg ---"
-              sudo -u builder git clone https://aur.archlinux.org/$pkg.git
-              cd $pkg
-              sudo -u builder makepkg -s --noconfirm
-              cp *.pkg.tar.zst ../x86_64/
-              cd ..
-            done
+          # 2. Lista paczek
+          PKGS=("masterpdfeditor-free" "touche" "paru-bin" "powershell-lts-bin" "arduino-ide-bin" "visual-studio-code-bin" "ytmdesktop-bin" "clion" "calamares" "hplip-plugin")
 
-            # 4. Aktualizacja bazy danych
-            cd x86_64
-            repo-add aur_repo.db.tar.gz *.pkg.tar.zst
-            rm -f aur_repo.db aur_repo.files
-            cp aur_repo.db.tar.gz aur_repo.db
-            cp aur_repo.files.tar.gz aur_repo.files
+          mkdir -p x86_64
+          # 3. Pętla budująca
+          for p in "${PKGS[@]}"; do
+            echo "Building $p..."
+            sudo -u builder git clone https://aur.archlinux.org/$p.git
+            cd $p
+            # Budowanie bez sprawdzania sum kontrolnych, jeśli boisz się o błędy wersji (opcjonalnie)
+            sudo -u builder makepkg -s --noconfirm
+            cp *.pkg.tar.zst ../x86_64/
             cd ..
+          done
 
-      - name: Sync Packages to OneDrive
+          # 4. Generowanie bazy
+          cd x86_64
+          repo-add aur_repo.db.tar.gz *.pkg.tar.zst
+          cp aur_repo.db.tar.gz aur_repo.db
+          cp aur_repo.files.tar.gz aur_repo.files
+
+      - name: Sync to OneDrive
         env:
           RCLONE_CONFIG_BODY: ${{ secrets.RCLONE_CONFIG_DATA }}
         run: |
           mkdir -p ~/.config/rclone
           echo "$RCLONE_CONFIG_BODY" > ~/.config/rclone/rclone.conf
-          # Wysyłamy tylko paczki (bez bazy .db), aby oszczędzać transfer w Gitubie
           rclone copy x86_64/ onedrive_personal:Arch/x86_64/ --include "*.pkg.tar.zst"
 
-      - name: Commit Database to GitHub
+      - name: Push DB changes to GitHub
         run: |
-          git config --global user.name "ArchRepoBot"
+          git config --global user.name "ArchBot"
           git config --global user.email "bot@github.com"
-          # Dodajemy tylko małe pliki bazy (git zignoruje paczki przez .gitignore)
           git add x86_64/*.db x86_64/*.files
-          git commit -m "Weekly Repo Update: $(date +'%Y-%m-%d')"
+          git commit -m "Update repo database [skip ci]"
           git push
+        # Dodajemy [skip ci], żeby bot nie uruchomił kolejnej akcji w pętli
