@@ -29,7 +29,7 @@ jobs:
           chown -R builder:builder .
 
           # 2. Definicja pakietów jako zwykły ciąg znaków
-          export PKGS="masterpdfeditor-free touche paru-bin powershell-lts-bin arduino-ide-bin visual-studio-code-bin ytmdesktop-bin clion calamares hplip-plugin"
+          export PKGS="masterpdfeditor-free touche paru powershell-lts-bin arduino-ide-bin visual-studio-code-bin ytmdesktop-bin clion calamares hplip-plugin"
 
           # 3. Uruchomienie budowania
           sudo -E -u builder bash -e << 'EOF'
@@ -48,8 +48,8 @@ jobs:
       - name: Clean and Update Database
         run: |
           # Poprawiona nazwa pliku (musi być zgodna z tym co masz w repo)
-          chmod +x .github/workflows/clean-repo.sh
-          ./.github/workflows/clean-repo.sh
+          chmod +x .github/workflows/clean.sh
+          ./.github/workflows/clean.sh
 
       - name: Clean and Update Database
         run: |
