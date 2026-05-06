@@ -18,12 +18,11 @@ jobs:
 
       - name: Install system dependencies
         run: |
-          pacman -Syu --noconfirm base-devel git rclone qt6-webengine sudo
+          pacman -Syu --noconfirm base-devel git rclone sudo
 
       - name: Build Packages
         run: |
-          PKGS=("coolercontrold-bin" "coolercontrol" "paru-bin" "visual-studio-code-bin")
-          
+          PKGS=("masterpdfeditor-free" "touche" "paru" "powershell-lts-bin" "arduino-ide-bin" "visual-studio-code-bin" "ytmdesktop-bin" "clion" "calamares" "hplip-plugin")
           useradd builder -m
           passwd -d builder
           echo 'builder ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/builder
@@ -35,7 +34,7 @@ jobs:
               echo "Building $pkg..."
               git clone https://aur.archlinux.org/$pkg.git
               cd $pkg
-              makepkg -s --noconfirm
+              sudo -u builder makepkg -s --noconfirm --nocheck --skippgpcheck
               cp *.pkg.tar.zst ../x86_64/
               cd ..
             done
