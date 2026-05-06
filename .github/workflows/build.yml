@@ -2,7 +2,7 @@ name: Build AUR Packages
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -22,23 +22,34 @@ jobs:
 
       - name: Build Packages
         run: |
-          PKGS=("masterpdfeditor-free" "touche" "paru" "powershell-lts-bin" "arduino-ide-bin" "visual-studio-code-bin" "ytmdesktop-bin" "clion" "calamares" "hplip-plugin")
+          # 1. Przygotowanie użytkownika
           useradd builder -m
           passwd -d builder
           echo 'builder ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/builder
           chown -R builder:builder .
 
-          sudo -u builder bash -c '
+          # 2. Definicja pakietów jako zwykły ciąg znaków
+          export PKGS="masterpdfeditor-free touche paru-bin powershell-lts-bin arduino-ide-bin visual-studio-code-bin ytmdesktop-bin clion calamares hplip-plugin"
+
+          # 3. Uruchomienie budowania
+          sudo -E -u builder bash -e << 'EOF'
             mkdir -p x86_64
-            for pkg in "'${PKGS[@]}'"; do
-              echo "Building $pkg..."
-              git clone https://aur.archlinux.org/$pkg.git
-              cd $pkg
-              sudo -u builder makepkg -s --noconfirm --nocheck --skippgpcheck
+            for pkg in $PKGS; do
+              echo "--- Building $pkg ---"
+              git clone "https://aur.archlinux.org/$pkg.git"
+              cd "$pkg"
+              # Nie używamy sudo wewnątrz, bo już jesteśmy użytkownikiem builder
+              makepkg -s --noconfirm --nocheck --skippgpcheck
               cp *.pkg.tar.zst ../x86_64/
               cd ..
             done
-          '
+          EOF
+
+      - name: Clean and Update Database
+        run: |
+          # Poprawiona nazwa pliku (musi być zgodna z tym co masz w repo)
+          chmod +x .github/workflows/clean-repo.sh
+          ./.github/workflows/clean-repo.sh
 
       - name: Clean and Update Database
         run: |
