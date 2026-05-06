@@ -1,73 +1,67 @@
-name: Weekly Rolling Build
+name: Build AUR Packages
+
 on:
-  schedule:
-    - cron: "0 0 * * 0" # Co niedzielę o 00:00
-  workflow_dispatch: # Pozwala też uruchomić ręcznie przyciskiem
+  push:
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    # To jest klucz: GitHub sam odpali kontener Archa
     container:
       image: archlinux:latest
-      options: --privileged
+      options: --privileged # Ważne dla makepkg
 
     steps:
-      - name: Install system dependencies
-        run: |
-          pacman -Syu --noconfirm base-devel git rclone sudo
-
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install dependencies
+        run: |
+          pacman -Syu --noconfirm base-devel git rclone powershell qt6-webengine
+
       - name: Build Packages
         run: |
-          # 1. Konfiguracja użytkownika (makepkg nie lubi roota)
-          useradd -m builder
-          echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+          # Twoja lista paczek w bashu (kolejność ma znaczenie!)
+          PKGS=("coolercontrold-bin" "coolercontrol" "paru-bin" "visual-studio-code-bin")
+          
+          # Ustawienie uprawnień (makepkg nie lubi roota)
+          useradd builder -m
+          passwd -d builder
+          printf 'builder ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/builder
           chown -R builder:builder .
 
-          sed -i 's/OPTIONS=(/OPTIONS=(!debug /' /etc/makepkg.conf
+          sudo -u builder bash -c '
+            mkdir -p x86_64
+            for pkg in "'${PKGS[@]}'"; do
+              git clone https://aur.archlinux.org/$pkg.git
+              cd $pkg
+              makepkg -s --noconfirm
+              cp *.pkg.tar.zst ../x86_64/
+              cd ..
+            done
+          '
 
-          # Klucze PGP
-          #sudo -u builder gpg --recv-keys 5E4E4D24A34ECD57
-
-          # 2. Lista paczek
-          PKGS=("masterpdfeditor-free" "touche" "paru-bin" "powershell-lts-bin" "arduino-ide-bin" "visual-studio-code-bin" "ytmdesktop-bin" "clion" "calamares" "hplip-plugin" "teams-for-linux-bin" "google-chrome" "debtap" "ttf-ms-fonts")
-
-          mkdir -p x86_64
-          # 3. Pętla budująca
-          for p in "${PKGS[@]}"; do
-            echo "Building $p..."
-            sudo -u builder git clone https://aur.archlinux.org/$p.git
-            cd $p
-            # Budowanie bez sprawdzania sum kontrolnych, jeśli boisz się o błędy wersji (opcjonalnie)
-            sudo -u builder makepkg -s --noconfirm --nocheck --skippgpcheck
-            cp *.pkg.tar.zst ../x86_64/
-            cd ..
-          done
-
-          # 4. Generowanie bazy
-          cd x86_64
-          repo-add aur_repo.db.tar.gz *.pkg.tar.zst
-          rm -f aur_repo.db aur_repo.files
-          cp aur_repo.db.tar.gz aur_repo.db
-          cp aur_repo.files.tar.gz aur_repo.files
+      - name: Clean and Update Database (PowerShell)
+        shell: pwsh
+        run: |
+          ./.github/workflows/clean.ps1
 
       - name: Sync to OneDrive
         env:
-          RCLONE_CONFIG_BODY: ${{ secrets.RCLONE_CONFIG_DATA }}
+          RCLONE_CONFIG_BODY: ${{ secrets.RCLONE_CONFIG }}
         run: |
+          # Tworzymy config rclone w locie
           mkdir -p ~/.config/rclone
           echo "$RCLONE_CONFIG_BODY" > ~/.config/rclone/rclone.conf
-          rclone copy x86_64/ onedrive_personal:Arch/x86_64/ --include "*.pkg.tar.zst"
+          
+          # SYNC zamiast COPY - to usunie pliki debug z OneDrive!
+          rclone sync ./x86_64 onedrive_personal:Arch/x86_64 --vfs-cache-mode full
 
-      - name: Push DB changes to GitHub
+      - name: Commit Database Changes
         run: |
-          git config --global --add safe.directory /__w/aur_repo/aur_repo
-          git config --global user.name "ArchBot"
-          git config --global user.email "bot@github.com"
-          git add x86_64/*.db x86_64/*.files
-          git commit -m "Update repo database [skip ci]"
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add x86_64/*.db* x86_64/*.files*
+          git commit -m "Update repository database [skip ci]" || echo "No changes to commit"
           git push
-        # Dodajemy [skip ci], żeby bot nie uruchomił kolejnej akcji w pętli
