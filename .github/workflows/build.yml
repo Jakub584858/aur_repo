@@ -60,7 +60,7 @@ jobs:
           mkdir -p ~/.config/rclone
           echo "$RCLONE_CONFIG_BODY" > ~/.config/rclone/rclone.conf
           # rclone sync usunie pliki debug z chmury, bo nie ma ich już w ./x86_64
-          rclone sync ./x86_64 onedrive_personal:Arch/x86_64 --vfs-cache-mode full
+          rclone sync ./x86_64 onedrive_personal:Arch/x86_64
 
       - name: Commit Database Changes
         run: |
