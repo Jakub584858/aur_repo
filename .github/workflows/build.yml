@@ -53,11 +53,6 @@ jobs:
           chmod +x .github/workflows/clean.sh
           ./.github/workflows/clean.sh
 
-      - name: Clean and Update Database
-        run: |
-          chmod +x .github/workflows/clean-repo.sh
-          ./.github/workflows/clean.sh
-
       - name: Sync to OneDrive
         env:
           RCLONE_CONFIG_BODY: ${{ secrets.RCLONE_CONFIG }}
